@@ -14,7 +14,7 @@ if __name__ == "__main__":
     feature_matrix = pd.read_csv("./data/feature_matrix.csv", index_col=0, parse_dates=True)
     returns_matrix = pd.read_csv("./data/returns_matrix.csv", index_col=0, parse_dates=True)
     target_asset = 'AAPL'
-    target_column = f"{target_asset}_return"    
+    target_column = f"{target_asset}"    
     X = feature_matrix.loc[:, feature_matrix.columns.str.startswith(target_asset)]
     y = returns_matrix[target_column]
     # Train Ridge model
