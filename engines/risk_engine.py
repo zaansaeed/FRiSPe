@@ -20,14 +20,18 @@ def compute_risk_signal(df_iv, df_rv, df_corr) -> pd.DataFrame:
     df_iv = df_iv.loc[common_index, common_assets]
     df_rv = df_rv.loc[common_index, common_assets]
     
+    
     # Calculate VRP for all assets (vectorized)
     vrp_raw = (df_iv[common_assets] - df_rv[common_assets]) / df_rv[common_assets]
     
     # Drop rows with any NaN in VRP
-    vrp_raw = vrp_raw.dropna()
-    
+    #vrp_raw = vrp_raw.dropna()
+
+
+
     # Update common_index to match vrp_raw
     common_index = vrp_raw.index
+
 
     # Handle correlation signal
     corr_signal_df = pd.DataFrame(0.0, index=common_index, columns=common_assets)
@@ -53,7 +57,9 @@ def compute_risk_signal(df_iv, df_rv, df_corr) -> pd.DataFrame:
         1.0 * vrp_raw +
         0 * corr_signal_df # Currently zeroed out; adjust weight as needed
     )
-    
+
+
+
     # Calculate rolling z-scores for all assets (vectorized!)
     rolling_mean = composite_signal.rolling(window=window, min_periods=min_periods).mean()
     rolling_std = composite_signal.rolling(window=window, min_periods=min_periods).std()
@@ -63,9 +69,8 @@ def compute_risk_signal(df_iv, df_rv, df_corr) -> pd.DataFrame:
     # Drop any date (row) that has NaN for any asset so returned DataFrame
     # contains only complete dates across all assets.
     zscore_risk = zscore_risk.dropna(how="any")
-
+    
     # Strip timezone and time component from index so dates show as just dates (e.g., 2025-01-23)
     zscore_risk.index = pd.to_datetime(zscore_risk.index).normalize().tz_localize(None).date
-
     return zscore_risk
 

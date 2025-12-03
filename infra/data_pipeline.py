@@ -44,11 +44,13 @@ def calc_realized_volatility(window, df) -> pd.DataFrame:
     """Calculate the realized volatility over a rolling window."""
 
     df = df.sort_values(['symbol', 'timestamp']).reset_index(drop=True)
-    df.dropna(inplace=True)   
-    df['realized_vol'] = df.groupby('symbol')['log_return'].rolling(window=window).std().reset_index(drop=True) # 30-day rolling std dev of log returns
-    df['realized_vol_annual'] = df['realized_vol'] * np.sqrt(252) # Annualize the volatility
+    df.dropna(inplace=True) 
+  
+    df['realized_vol'] = df.groupby('symbol')['log_return'].transform( lambda x: x.rolling(window=window).std())
+    df['realized_vol_annual'] = df['realized_vol'] * np.sqrt(252)
 
     df = df.pivot(index='timestamp', columns='symbol', values='realized_vol_annual')
+
     return df
     
     
@@ -178,8 +180,7 @@ def build_feature_matrix(assets):
     risk_pref = _prefix_columns(risk_df, "risk")
     regime_pref = _prefix_columns(regime_df, "regime")
 
-    # Concatenate horizontally, align on dates (outer) then drop any rows that
-    # contain NaN across any feature (per your request to drop incomplete dates).
+    # Concatenate horizontally, align on dates (outer) and sort by date
     combined = pd.concat([flow_pref, sentiment_pref, risk_pref, regime_pref], axis=1, join="outer")
     combined = combined.sort_index()
 
@@ -187,8 +188,6 @@ def build_feature_matrix(assets):
     combined = combined.dropna(how="all")
 
     combined.to_csv("./data/feature_matrix.csv", index=True)
-
-#build_feature_matrix(assets)
 
     
 def build_returns_matrix(assets) -> None:

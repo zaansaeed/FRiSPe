@@ -38,6 +38,7 @@ def compute_sentiment_signal(assets, history_file="./data/sentiment_history.csv"
             print(f"Error fetching news for {asset}: {e}")
             time.sleep(10)
             continue
+        print(len(news), f"news items fetched for {asset}.")
         for item in news:
             if hasattr(item, 'insights') and item.insights:
                 for insight in item.insights:
